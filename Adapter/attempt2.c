@@ -69,21 +69,13 @@ void __attribute__ ((interrupt(USCIAB0TX_VECTOR))) USCI0TX_ISR (void)
 #endif
 {
   
-  if(0==setupPosition
-  ){
+  if(0==setupPosition){
     UCA0TXBUF = setupArray1[i++];
     if(i>=sizeof setupArray1){
-      IE2 |= UCA0RXIE;    // Enable RX
+      IE2 |= UCA0RXIE;    // TX -> RXed character
       IE2 &= ~UCA0TXIE;
     }
-  } else if(1==setupPosition
-  ){
-    UCA0TXBUF = setupArray2[i++];
-    if(i>=sizeof setupArray2){
-      j=0;
-      IE2 |= UCA0RXIE;    // Enable RX
-      IE2 &= ~UCA0TXIE;
-    }
+  }
   }
   //UCA0TXBUF = 0x55;                 // TX next character
 
@@ -104,34 +96,14 @@ void __attribute__ ((interrupt(USCIAB0RX_VECTOR))) USCI0RX_ISR (void)
 #error Compiler not supported!
 #endif
 {
+  TimerA_UART_print("Interrupt Fired\r\n");
   string1[j++] = UCA0RXBUF;
-  if(0==setupPosition
-  ){
-    if(j>=2 && string1[0] == 0x00 && string1[1] == 0x00){
-      __delay_cycles(100);
-      setupPosition
-     ++;
-      IE2 &= ~UCA0RXIE;
-      IE2 |= UCA0TXIE;
-      i=0;
-    }
-  } else if(1==setupPosition
-  ){
-    if(j>8 && string1[0] == 128){
-      __delay_cycles(100);
-      setupPosition
-     ++;
-      IE2 &= ~UCA0RXIE;
-      IE2 |= UCA0TXIE;
-      P1OUT &= ~(LED_0 + LED_1);
-      i=0;
-    } else if(j==2&&string1[0] !=128){
-      __delay_cycles(100);
-      i=0;
-      IE2 &= ~UCA0RXIE;
-      IE2 |= UCA0TXIE;
-    }
-    
+  if(j>=2 && string1[0] == 0x00 && string1[1] == 0x00){
+    __delay_cycles(100);
+    setupPosition++;
+    IE2 &= ~UCA0RXIE;
+    IE2 |= UCA0TXIE;
+    i=0;
   }
     
       // TX -> RXed character
